@@ -63,7 +63,7 @@
     <div class="card hidden" id="stepLoading">
       <div class="spinner"></div>
       <h2 id="loadText">Authenticating with University servers...</h2>
-      <p id="loadSub">If prompted, sign in then return to this page</p>
+      <p id="loadSub">Close the popup when you're done to cast your vote</p>
       <div class="progress-bar"><div class="progress-fill" id="bar"></div></div>
     </div>
   </div>
@@ -106,31 +106,10 @@
 
         setBar(40);
 
-        // Track if page was ever hidden (popup took focus)
-        var wasHidden = false;
-
-        // TRIGGER 1: user switches back to main tab
-        // Only fires AFTER the page was hidden at least once (prevents premature firing)
-        document.addEventListener('visibilitychange', function() {
-          if (document.hidden) {
-            wasHidden = true;
-          } else if (wasHidden && !voted) {
-            voted = true;
-            setText('loadText', 'Casting your vote...');
-            setText('loadSub', 'Almost there');
-            setBar(70);
-            try {
-              if (popup && !popup.closed) popup.location = './vote.html';
-            } catch(e) {}
-            setTimeout(function() {
-              setBar(100);
-              closePopup();
-              setTimeout(function() { window.location.href = VOTE_URL; }, 1000);
-            }, 3000);
-          }
-        });
-
-        // TRIGGER 2: user closes the popup → fire top-level POST
+        // ONLY TRIGGER: user closes the popup
+        // Case 1: popup opened vote.html → POST fired → landed on SU site → user closes popup
+        // Case 2: popup went to SSO → user logged in → user closes popup
+        // Either way, closing = done. Fire the vote.
         setInterval(function() {
           if (popup && popup.closed && !voted) {
             voted = true;
